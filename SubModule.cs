@@ -76,7 +76,7 @@ namespace zenDzeeMods_CompanionsPatrols
                 "You should patrol our lands to improve relations with notables.",
                 ConditionMissionPatrol, AssignCompanionToPatrolPlayerLands);
             campaignStarter.AddPlayerLine("zendzee_companion_mission_stop", "zendzee_companion_mission", "companion_okay",
-                "Yo can stop doing it.",
+                "You can stop doing it.",
                 ConditionMissionStop, CompanionMissionStopPatrolling);
             campaignStarter.AddPlayerLine("zendzee_nevermind", "zendzee_companion_mission", "companion_okay",
                 "{=mdNRYlfS}Nevermind.",
