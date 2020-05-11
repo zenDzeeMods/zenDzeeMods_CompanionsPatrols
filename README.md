@@ -4,6 +4,7 @@
 Open zenDzeeMods_CompanionsPatrols.csproj in the notepad and edit property `<MNB2DIR>` according to location of your game.
 Now you can open zenDzeeMods_CompanionsPatrols.sln in VisualStudio and build it.
 
+## Features
 1. If a companion patrols around your settlement, this increases the relation with notables in the settlement.
 2. You can order your companion to focus on patrolling. And she will give priority to patrolling over other objectives.
 3. If the companion is focused on patrolling, she cannot be summoned to the army unless it is the player’s army.
