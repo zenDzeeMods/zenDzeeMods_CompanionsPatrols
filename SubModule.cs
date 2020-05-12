@@ -27,8 +27,6 @@ namespace zenDzeeMods_CompanionsPatrols
         private const string EvtPatrolLands = "patrol_player_lands";
         private const float MinPatrolDistance = 2000f;
         private const int HoursRequirement = 24;
-        /** Should be multiple of HoursRequirement */
-        private const int MaxCompanionPersonalRelation = HoursRequirement * 2;
 
         private void AssignCompanionToPatrolPlayerLands()
         {
@@ -64,19 +62,19 @@ namespace zenDzeeMods_CompanionsPatrols
         private void OnSessionLaunched(CampaignGameStarter campaignStarter)
         {
             campaignStarter.AddPlayerLine("zendzee_companion_start_mission", "hero_main_options", "zendzee_companion_mission_pretalk",
-                "Let's talk about improving the position of our clan.",
+                "{=zee04AA1262}Let's talk about improving the position of our clan.",
                 ConditionImroveClanPosition, null);
             campaignStarter.AddDialogLine("zendzee_companion_pretalk_patrolling", "zendzee_companion_mission_pretalk", "zendzee_companion_mission",
-                "I patrol our lands.",
+                "{=zeeFA5B9477}I patrol our lands.",
                 ConditionCompaionInPatrol, null);
             campaignStarter.AddDialogLine("zendzee_companion_pretalk", "zendzee_companion_mission_pretalk", "zendzee_companion_mission",
                 "{=7EoBCTX0}What do you want me to do?[rb:unsure]",
                 ConditionCompaionHaveNoMission, null);
             campaignStarter.AddPlayerLine("zendzee_companion_mission_patrol", "zendzee_companion_mission", "companion_okay",
-                "You should patrol our lands to improve relations with notables.",
+                "{=zeeE0CBDC67}You should patrol our lands to improve relations with notables.",
                 ConditionMissionPatrol, AssignCompanionToPatrolPlayerLands);
             campaignStarter.AddPlayerLine("zendzee_companion_mission_stop", "zendzee_companion_mission", "companion_okay",
-                "You can stop doing it.",
+                "{=zee8F9F16B4}You can stop doing it.",
                 ConditionMissionStop, CompanionMissionStopPatrolling);
             campaignStarter.AddPlayerLine("zendzee_nevermind", "zendzee_companion_mission", "companion_okay",
                 "{=mdNRYlfS}Nevermind.",
@@ -143,7 +141,7 @@ namespace zenDzeeMods_CompanionsPatrols
                 if (companion_relation % HoursRequirement == 0)
                 {
                     // reset companion personal relation
-                    companion_relation = MBMath.ClampInt(companion_relation, -MaxCompanionPersonalRelation, MaxCompanionPersonalRelation);
+                    companion_relation = 0;
 
                     // increase player relation
                     int oldRelation = notable.GetRelation(Hero.MainHero);

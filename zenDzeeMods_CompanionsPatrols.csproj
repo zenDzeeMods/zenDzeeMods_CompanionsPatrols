@@ -72,10 +72,14 @@
     <Compile Include="SubModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Content Include="SubModule.xml" />
+    <Content Include="ModuleData\Languages\*.xml" />
   </ItemGroup>
   <!-- Post-Build -->
   <PropertyGroup>
-    <PostBuildEvent>xcopy /d /y "$(MSBuildProjectDirectory)\SubModule.xml" "..\..\"</PostBuildEvent>
+    <PostBuildEvent>
+      xcopy /d /y "$(MSBuildProjectDirectory)\SubModule.xml" "..\..\"
+      xcopy /d /y /s "$(MSBuildProjectDirectory)\ModuleData" "..\..\ModuleData\"
+    </PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

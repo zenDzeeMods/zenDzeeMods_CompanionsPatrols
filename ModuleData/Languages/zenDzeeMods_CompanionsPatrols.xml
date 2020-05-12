@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" type="string">
+  <tags>
+    <tag language="English" />
+  </tags>
+  <strings>
+    <string id="zee04AA1262" text="Let's talk about improving the position of our clan." />
+    <string id="zeeFA5B9477" text="I patrol our lands."/>
+    <string id="zeeE0CBDC67" text="You should patrol our lands to improve relations with notables."/>
+    <string id="zee8F9F16B4" text="You can stop doing it."/>
+  </strings>
+</base>
