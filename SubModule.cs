@@ -1,10 +1,10 @@
 ﻿using Helpers;
 using System;
 using System.Linq;
+using System.Reflection;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.Core;
-using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
 
@@ -153,10 +153,10 @@ namespace zenDzeeMods_CompanionsPatrols
                     {
                         TextObject textObject = GameTexts.FindText("str_your_relation_increased_with_notable", null);
                         TextObject heroText = new TextObject();
-                        heroText.SetTextVariable("NAME", notable.Name);
-                        textObject.SetTextVariable("HERO", heroText);
-                        textObject.SetTextVariable("VALUE", newRelation);
-                        textObject.SetTextVariable("MAGNITUDE", relation_change);
+                        SetTextVariable(heroText, "NAME", notable.Name);
+                        SetTextVariable(textObject, "HERO", heroText);
+                        SetTextVariable(textObject, "VALUE", newRelation);
+                        SetTextVariable(textObject, "MAGNITUDE", relation_change);
                         InformationManager.DisplayMessage(new InformationMessage(textObject.ToString()));
                     }
                 }
@@ -229,5 +229,31 @@ namespace zenDzeeMods_CompanionsPatrols
             }
         }
 
+        private void SetTextVariable(TextObject text, string tag, int variable)
+        {
+            SetTextVariable_internal<int>(text, tag, variable);
+        }
+
+        private void SetTextVariable(TextObject text, string tag, TextObject variable)
+        {
+            SetTextVariable_internal<TextObject>(text, tag, variable);
+        }
+
+        private void SetTextVariable_internal<T>(TextObject text, string tag, object variable)
+        {
+            Type textType = text.GetType();
+            if (textType == null)
+            {
+                InformationManager.DisplayMessage(new InformationMessage("ERROR: textType is null"));
+                return;
+            }
+            MethodInfo setTextVariableMethod = textType.GetMethod("SetTextVariable", new Type[] { typeof(string), typeof(T) });
+            if (setTextVariableMethod == null)
+            {
+                InformationManager.DisplayMessage(new InformationMessage("ERROR: setTextVariableMethod is null"));
+                return;
+            }
+            setTextVariableMethod.Invoke(text, new object[] { tag, variable });
+        }
     }
 }
