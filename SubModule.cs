@@ -1,12 +1,11 @@
 ﻿using Helpers;
-using System;
 using System.Linq;
-using System.Reflection;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
+using zenDzeeMods;
 
 namespace zenDzeeMods_CompanionsPatrols
 {
@@ -24,7 +23,23 @@ namespace zenDzeeMods_CompanionsPatrols
 
     internal class CompanionsPatrolsBehavior : CampaignBehaviorBase
     {
+        public CompanionsPatrolsBehavior()
+        {
+            CompanionAiPatrolProperty = new PropertyObject("zenDzeeMods_patrol_player_lands");
+            PropertyObject tmp = ZenDzeeCompatibilityHelper.RegisterPresumedObject(CompanionAiPatrolProperty);
+            if (tmp != null)
+            {
+                CompanionAiPatrolProperty = tmp;
+            }
+            CompanionAiPatrolProperty.Initialize(new TextObject("zenDzeeMods_patrol_player_lands"),
+                new TextObject("Non-zero value tells companion to patrol player lands."));
+        }
+
+        // backward-compatibility
         private const string EvtPatrolLands = "patrol_player_lands";
+        
+        private PropertyObject CompanionAiPatrolProperty;
+
         private const float MinPatrolDistance = 2000f;
         private const int HoursRequirement = 24;
 
@@ -32,9 +47,9 @@ namespace zenDzeeMods_CompanionsPatrols
         {
             if (Hero.OneToOneConversationHero == null) return;
 
-            if (!Hero.OneToOneConversationHero.GetHeroOccupiedEvents().Contains(EvtPatrolLands))
+            if (Hero.OneToOneConversationHero.HeroDeveloper.GetPropertyValue(CompanionAiPatrolProperty) == 0)
             {
-                Hero.OneToOneConversationHero.AddEventForOccupiedHero(EvtPatrolLands);
+                Hero.OneToOneConversationHero.HeroDeveloper.SetPropertyValue(CompanionAiPatrolProperty, 1);
             }
         }
 
@@ -42,7 +57,7 @@ namespace zenDzeeMods_CompanionsPatrols
         {
             if (Hero.OneToOneConversationHero == null) return;
 
-            Hero.OneToOneConversationHero.RemoveEventFromOccupiedHero(EvtPatrolLands);
+            Hero.OneToOneConversationHero.HeroDeveloper.SetPropertyValue(CompanionAiPatrolProperty, 0);
         }
 
         public override void SyncData(IDataStore dataStore)
@@ -55,7 +70,6 @@ namespace zenDzeeMods_CompanionsPatrols
             CampaignEvents.HourlyTickPartyEvent.AddNonSerializedListener(this, OnHourlyTickEvent);
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
             CampaignEvents.ArmyCreated.AddNonSerializedListener(this, OnArmyCreated);
-            CampaignEvents.PrisonerTaken.AddNonSerializedListener(this, OnPrisonerTaken);
             CampaignEvents.OnPartyDisbandedEvent.AddNonSerializedListener(this, OnPartyDisbanded);
         }
 
@@ -90,7 +104,7 @@ namespace zenDzeeMods_CompanionsPatrols
         private bool ConditionCompaionInPatrol()
         {
             return Hero.OneToOneConversationHero != null
-                && Hero.OneToOneConversationHero.GetHeroOccupiedEvents().Contains(EvtPatrolLands);
+                && Hero.OneToOneConversationHero.HeroDeveloper.GetPropertyValue(CompanionAiPatrolProperty) != 0;
         }
 
         private bool ConditionCompaionHaveNoMission()
@@ -153,10 +167,10 @@ namespace zenDzeeMods_CompanionsPatrols
                     {
                         TextObject textObject = GameTexts.FindText("str_your_relation_increased_with_notable", null);
                         TextObject heroText = new TextObject();
-                        SetTextVariable(heroText, "NAME", notable.Name);
-                        SetTextVariable(textObject, "HERO", heroText);
-                        SetTextVariable(textObject, "VALUE", newRelation);
-                        SetTextVariable(textObject, "MAGNITUDE", relation_change);
+                        ZenDzeeCompatibilityHelper.SetTextVariable(heroText, "NAME", notable.Name);
+                        ZenDzeeCompatibilityHelper.SetTextVariable(textObject, "HERO", heroText);
+                        ZenDzeeCompatibilityHelper.SetTextVariable(textObject, "VALUE", newRelation);
+                        ZenDzeeCompatibilityHelper.SetTextVariable(textObject, "MAGNITUDE", relation_change);
                         InformationManager.DisplayMessage(new InformationMessage(textObject.ToString()));
                     }
                 }
@@ -175,7 +189,14 @@ namespace zenDzeeMods_CompanionsPatrols
                 return;
             }
 
-            if (mobileParty.Army != null || !companion.GetHeroOccupiedEvents().Contains(EvtPatrolLands))
+            // backward-compatibility
+            if (companion.GetHeroOccupiedEvents().Contains(EvtPatrolLands))
+            {
+                companion.RemoveEventFromOccupiedHero(EvtPatrolLands);
+                companion.HeroDeveloper.SetPropertyValue(CompanionAiPatrolProperty, 1);
+            }
+
+            if (mobileParty.Army != null || companion.HeroDeveloper.GetPropertyValue(CompanionAiPatrolProperty) == 0)
             {
                 return;
             }
@@ -209,51 +230,19 @@ namespace zenDzeeMods_CompanionsPatrols
 
             foreach (Hero hero in Clan.PlayerClan.CommanderHeroes)
             {
-                if (hero.GetHeroOccupiedEvents().Contains(EvtPatrolLands) && army.Parties.Contains(hero.PartyBelongedTo))
+                if (hero.HeroDeveloper.GetPropertyValue(CompanionAiPatrolProperty) != 0 && army.Parties.Contains(hero.PartyBelongedTo))
                 {
                     hero.PartyBelongedTo.Army = null;
                 }
             }
         }
 
-        private void OnPrisonerTaken(PartyBase arg1, Hero hero)
-        {
-            hero.RemoveEventFromOccupiedHero(EvtPatrolLands);
-        }
-
         private void OnPartyDisbanded(MobileParty mobileParty)
         {
             if (mobileParty.LeaderHero != null && mobileParty.IsLordParty)
             {
-                mobileParty.LeaderHero.RemoveEventFromOccupiedHero(EvtPatrolLands);
+                mobileParty.LeaderHero.HeroDeveloper.SetPropertyValue(CompanionAiPatrolProperty, 0);
             }
-        }
-
-        private void SetTextVariable(TextObject text, string tag, int variable)
-        {
-            SetTextVariable_internal<int>(text, tag, variable);
-        }
-
-        private void SetTextVariable(TextObject text, string tag, TextObject variable)
-        {
-            SetTextVariable_internal<TextObject>(text, tag, variable);
-        }
-
-        private void SetTextVariable_internal<T>(TextObject text, string tag, object variable)
-        {
-            Type textType = text.GetType();
-            if (textType == null)
-            {
-                InformationManager.DisplayMessage(new InformationMessage("ERROR: textType is null"));
-                return;
-            }
-            MethodInfo setTextVariableMethod = textType.GetMethod("SetTextVariable", new Type[] { typeof(string), typeof(T) });
-            if (setTextVariableMethod == null)
-            {
-                InformationManager.DisplayMessage(new InformationMessage("ERROR: setTextVariableMethod is null"));
-                return;
-            }
-            setTextVariableMethod.Invoke(text, new object[] { tag, variable });
         }
     }
 }
