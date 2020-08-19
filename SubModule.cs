@@ -228,9 +228,10 @@ namespace zenDzeeMods_CompanionsPatrols
                 return;
             }
 
-            foreach (Hero hero in Clan.PlayerClan.CommanderHeroes)
+            foreach (MobileParty party in Clan.PlayerClan.WarParties)
             {
-                if (hero.HeroDeveloper.GetPropertyValue(CompanionAiPatrolProperty) != 0 && army.Parties.Contains(hero.PartyBelongedTo))
+                Hero hero = party.LeaderHero;
+                if (hero.HeroDeveloper.GetPropertyValue(CompanionAiPatrolProperty) != 0 && army.Parties.Contains(party))
                 {
                     hero.PartyBelongedTo.Army = null;
                 }
